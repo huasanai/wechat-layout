@@ -23,13 +23,13 @@ const SIDE = '20px'
  */
 export function createBaseComponents(v: DesignVars): Partial<ThemeComponents> {
   return {
-    // 全局容器
+    // 全局容器（整篇统一极淡灰底 + 柔和圆角，与图片自然融合）
     globalContainer: (children: string) =>
-      `<section style="max-width:677px;margin:0 auto;background:#ffffff;font-family:${v.fontFamily};color:${v.bodyColor};line-height:1.75;letter-spacing:0.5px;overflow-x:hidden;">${children}</section>`,
+      `<section style="max-width:677px;margin:0 auto;padding:24px 0;background:#FBFBFB;border-radius:16px;font-family:${v.fontFamily};color:${v.bodyColor};line-height:1.75;letter-spacing:0.5px;overflow-x:hidden;box-sizing:border-box;">${children}</section>`,
 
     // 正文段落（两端对齐，参考上游 text-align:justify）
-    bodyParagraph: (html: string) =>
-      `<p style="margin:0 ${SIDE} 18px;font-size:${v.bodyFontSize};line-height:${v.bodyLineHeight};color:${v.bodyColor};letter-spacing:0.5px;text-align:justify;">${html}</p>`,
+    bodyParagraph: (html: string, inList = false) =>
+      `<p style="margin:${inList ? '0 0 8px' : `0 ${SIDE} 18px`};font-size:${v.bodyFontSize};line-height:${v.bodyLineHeight};color:${v.bodyColor};letter-spacing:0.5px;text-align:justify;">${html}</p>`,
 
     // 主色加粗
     boldPrimary: (html: string) =>
@@ -83,23 +83,23 @@ export function createBaseComponents(v: DesignVars): Partial<ThemeComponents> {
     inlineCode: (code: string) =>
       `<span style="background:${v.lightGrayBg};color:${v.primary};padding:1px 6px;border-radius:4px;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;">${wrapLeaf(code)}</span>`,
 
-    // 标准图片
+    // 标准图片（无白底外框，直接融入文章整体底色）
     image: (src: string, alt: string) => {
       const img = `<span leaf=""><img src="${src}" style="max-width:100%;height:auto;display:block;margin:0 auto;"></span>`
       const caption = alt
-        ? `<p style="font-size:12px;color:${v.mutedText};text-align:center;margin:0 ${SIDE} 24px;">${wrapLeaf(escapeHtml(toFullWidthPunctuation(`— ${alt}`)))}</p>`
+        ? `<p style="font-size:12px;color:${v.mutedText};text-align:center;margin:0 ${SIDE} 24px;">${wrapLeaf(escapeHtml(toFullWidthPunctuation(alt)))}</p>`
         : ''
-      return `<section style="margin:0 ${SIDE} 8px;background:#FFF;border-radius:12px;padding:6px;border:1px solid ${v.borderColor};box-shadow:0 4px 12px -2px rgba(0,0,0,0.08);"><section style="margin:0;border-radius:8px;overflow:hidden;">${img}</section></section>${caption}`
+      return `<section style="margin:0 ${SIDE} ${alt ? '8px' : '20px'};">${img}</section>${caption}`
     },
 
-    // GIF 动图
+    // GIF 动图（无白底外框，直接融入文章整体底色）
     gifImage: (src: string, alt: string) => {
       const img = `<span leaf=""><img src="${src}" style="max-width:100%;height:auto;display:block;margin:0 auto;"></span>`
       const badge = `<span style="display:inline-block;background:${v.lightBg};color:${v.primary};font-size:11px;font-weight:700;padding:1px 8px;border-radius:4px;margin-right:6px;">${wrapLeaf('GIF 动图')}</span>`
       const caption = alt
         ? `<span style="font-size:12px;color:${v.mutedText};">${wrapLeaf(escapeHtml(alt))}</span>`
         : ''
-      return `<section style="margin:0 ${SIDE} 8px;background:#FFF;border-radius:12px;padding:6px;border:1px solid ${v.borderColor};box-shadow:0 4px 12px -2px rgba(0,0,0,0.08);"><section style="margin:0;border-radius:8px;overflow:hidden;">${img}</section></section><p style="text-align:center;margin:0 ${SIDE} 24px;">${badge}${caption}</p>`
+      return `<section style="margin:0 ${SIDE} 8px;">${img}</section><p style="text-align:center;margin:0 ${SIDE} 24px;">${badge}${caption}</p>`
     },
 
     // 待补素材占位

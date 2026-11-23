@@ -2,7 +2,7 @@
 
 把 Markdown 排成公众号文章，在浏览器预览、复制富文本或导出 HTML。默认使用**保真排版**，无需配置 LLM；接入 LLM 后，可选择使用上游的 AI 增强功能。
 
-本项目是 [DemoJ/md2html](https://github.com/DemoJ/md2html) 的个人 fork，组件设计源于甲木 × 摸鱼小李的 [gzh-design-skill](https://github.com/isjiamu/gzh-design-skill)。新增橙色／墨绿配色、保真模式、本地封面导入、文件渲染入口，并修正目录卡片为同排等宽等高。只交付预览、复制和导出，不自动推送公众号草稿箱。
+本项目是 [DemoJ/md2html](https://github.com/DemoJ/md2html) 的个人 fork，组件设计源于甲木 × 摸鱼小李的 [gzh-design-skill](https://github.com/isjiamu/gzh-design-skill)。新增橙色／墨绿配色、保真模式、文件渲染入口，并修正目录卡片为同排等宽等高。只交付预览、复制和导出，不自动推送公众号草稿箱。
 
 ## 先跑起来
 
@@ -32,7 +32,7 @@ Markdown → 解析标题/正文/列表/引用 → 按当前模式匹配组件 �
 | 你写的 Markdown | 渲染结果 | 是否参与 01、02… 编号 |
 |---|---|---|
 | `# 文章标题` | 大号文章标题 | 否；建议一篇只用一个一级标题 |
-| 普通段落 | 正文 | 否 |
+| 普通段落 | 正文，默认 15px | 否 |
 | `## 从答案退回问题` | 章节标题 | 是，按文中出现顺序编号 |
 | `### 小标题` | 较小的子标题；四至六级也走子标题逻辑 | 否 |
 | `## 本期看点` 或 `## 本文看点`，紧跟三项短列表 | 横向看点目录 | 开启「显示目录」时不参与章节编号 |
@@ -163,7 +163,7 @@ Markdown → 解析标题/正文/列表/引用 → 按当前模式匹配组件 �
 | 章节编号 | 普通二级标题按顺序计数 | 一级／二级章节标题按顺序计数，文首文章标题除外 |
 | 结语符号 | 结语关键词触发 `∞` 与 `THE END` | 按主题规则，如摸鱼绿及个人配色使用 `///`；英文标签由词典或 AI 决定 |
 | 引言 | 原位置的引用框 | 文章标题后的首个引用块可成为引言卡；无开头引用就不生成引言卡 |
-| 顶部封面 | 可导入现成图片；不自动生成文字封面卡 | 开启显示封面时，生成简单文字封面卡；AI 可补封面文案 |
+| 顶部封面 | 不插入封面图片；在公众号编辑器中手动插图 | 开启显示封面时，生成简单文字封面卡；AI 可补封面文案 |
 | 文末 | 自动 END；仅添加你填写的文末说明 | 可能添加署名与默认互动引导；保真模式的文末说明字段不用于此路径 |
 | LLM | 不调用；AI 按钮隐藏 | 配置后可主动点击「AI 增强」，不点也可按规则渲染 |
 
@@ -216,10 +216,12 @@ Markdown → 解析标题/正文/列表/引用 → 按当前模式匹配组件 �
 
 目录等宽等高规则在 [`src/themes/base.ts`](src/themes/base.ts) 的 `toc` 组件，修改后原摸鱼绿和个人配色一起生效。其他主题可以覆盖自己的组件，不能假定它们布局都相同。
 
-## 封面、图片、批注与导出
+## 正文字号、列表、图片与导出
 
-- **导入封面**：支持 12MB 以内 PNG/JPEG，比例约 2.35:1，推荐 1880×800。封面只存在本次会话内存，刷新后重新导入。现有独立封面工具输出的 PNG 可直接使用，本仓库不包含个人背景或字体素材。
-- **复制与图片**：封面在预览和导出 HTML 中内嵌；复制时替换为“请在此手动插入封面”标记，粘贴后自行插图。这不代表图片已上传。保真模式的其他正文图片须使用 HTTPS 地址。
+所有主题的默认正文字号为 15px。保真模式的有序和无序列表保留语义、起始序号与嵌套层级；标记在文章左右 20px 留白以内，列表段落不重复缩进。样式随正文内联写入复制结果。
+
+- **封面图片**：本工具不导入本地封面，不上传图片。完整封面由独立工具生成，在公众号编辑器中手动插入。
+- **复制与图片**：复制只包含正文富文本，不插入封面占位标记。保真模式的正文图片须使用 HTTPS 地址，微信保存后的可用性仍需核验。
 - **批注**：`%%内部备注%%` 不进入文章；存在未决批注时可预览但不能复制、导出。代码中的同样字符按字面保留。处理后从工作稿移除批注，不修改唯一原稿。文首 frontmatter 也不进入正文。
 - **外链**：保真模式保留链接地址，但微信可能限制外链点击。
 - **导出**：界面导出正文 HTML；文件入口还能输出 Markdown、预览与检查报告。字体与样式尽量随正文走内联样式，不依赖预览工具栏。
@@ -230,12 +232,12 @@ Markdown → 解析标题/正文/列表/引用 → 按当前模式匹配组件 �
 
 ```sh
 node scripts/render.mjs article.md --out output/new-article --theme huasan-claude
-node scripts/render.mjs article.md --out output/with-cover --theme huasan-forest --cover cover.png
+node scripts/render.mjs article.md --out output/forest-article --theme huasan-forest
 ```
 
-此入口只用保真模式，不调用 LLM；输出目录须为空，存在未决批注时停止。CLI 封面只接受 PNG。
+此入口只用保真模式，不调用 LLM；输出目录须为空，存在未决批注时停止。不再接受 `--cover` 参数。
 
-输出 `article.md`、`article-body.html`、`preview.html`、`check.json`，传入封面时另有 `cover.png`。预览页的复制功能需要 localhost/HTTPS；本地生成不等于作者确认或公众号实测通过。
+输出 `article.md`、`article-body.html`、`preview.html`、`check.json`。预览页的复制功能需要 localhost/HTTPS；本地生成不等于作者确认或公众号实测通过。
 
 ## 开发与源码导航
 
@@ -254,7 +256,7 @@ npm run preview  # 本地查看构建结果
 | 基础组件及目录卡片等高 | [`src/themes/base.ts`](src/themes/base.ts) |
 | 主题注册与默认主题 | [`src/themes/index.ts`](src/themes/index.ts) |
 | LLM 提示词与分析编排 | [`src/ai/prompts.ts`](src/ai/prompts.ts)、[`src/ai/enhance.ts`](src/ai/enhance.ts) |
-| 实时渲染、封面状态与剪贴板 | [`src/stores/editor.ts`](src/stores/editor.ts) |
+| 实时渲染与剪贴板 | [`src/stores/editor.ts`](src/stores/editor.ts) |
 | 本地文件渲染 | [`scripts/render.mjs`](scripts/render.mjs) |
 
 主题源码和应用使用 Vue 3、TypeScript、Pinia、markdown-it、Tailwind CSS 和 Vite。构建产物可由静态服务器托管；本仓库保留上游 Dockerfile 与 docker-compose 配置。本文没有声明已完成线上部署或所有服务商的 LLM 实测。

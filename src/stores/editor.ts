@@ -114,25 +114,11 @@ export const useEditorStore = defineStore('editor', () => {
 
   // 生成的 HTML
   const generatedHtml = ref<string>('')
-  const bodyHtml = ref('')
   const renderError = ref('')
   const annotations = ref<string[]>([])
-  const coverData = ref('')
-  const coverName = ref('')
   const copyMessage = ref('')
 
   const canCopy = computed(() => !!generatedHtml.value && !renderError.value && !annotations.value.length && !(validationResult.value?.errors.length))
-
-  async function importCover(file: File) {
-    if (!['image/png','image/jpeg'].includes(file.type) || file.size > 12*1024*1024) throw new Error('请选择 12MB 以内的 PNG 或 JPEG 封面。')
-    const data = await new Promise<string>((resolve,reject)=> { const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error('封面读取失败'));reader.readAsDataURL(file) })
-    await new Promise<void>((resolve,reject)=>{ const img=new Image();img.onload=()=>Math.abs(img.width/img.height-2.35)<0.03?resolve():reject(new Error('封面比例应为 2.35:1，请先生成完整封面。'));img.onerror=()=>reject(new Error('图片无法解码'));img.src=data })
-    coverData.value=data;coverName.value=file.name;convertBasic()
-  }
-  function removeCover() {coverData.value='';coverName.value='';convertBasic()}
-  function combineCover(html: string): string {
-    return coverData.value && useSettingsStore().showCover ? `<section style="margin:0 0 26px;"><span leaf=""><img src="${coverData.value}" alt="文章封面" style="display:block;max-width:100%;height:auto;margin:0 auto;"></span></section>${html}` : html
-  }
 
   // 校验结果
   const validationResult = ref<ValidationResult | null>(null)
@@ -197,12 +183,11 @@ export const useEditorStore = defineStore('editor', () => {
         showToc: settings.showToc,
       })
       }
-      bodyHtml.value = html
-      generatedHtml.value = combineCover(html)
+      generatedHtml.value = html
       validationResult.value = validateGzhHtml(html)
       if(settings.faithfulMode) validationResult.value.warnings = validationResult.value.warnings.filter(w=>!w.message.includes('半角标点'))
     } catch (err) {
-      generatedHtml.value = '';bodyHtml.value = '';validationResult.value = null
+      generatedHtml.value = '';validationResult.value = null
       renderError.value = err instanceof Error ? err.message : String(err)
       console.error('渲染失败:', err)
     }
@@ -301,9 +286,8 @@ export const useEditorStore = defineStore('editor', () => {
     // Always render current input; a click can arrive before the debounce finishes.
     convertBasic()
     if (!canCopy.value) return false
-    const hasCover = !!coverData.value && useSettingsStore().showCover
-    const html = (hasCover ? '<p><span leaf="">【请在此手动插入封面】</span></p>' : '') + bodyHtml.value
-    copyMessage.value = hasCover ? '正文已复制；请在顶部标记处手动插入封面。' : '正文已复制；请粘贴、保存并重新打开检查。'
+    const html = generatedHtml.value
+    copyMessage.value = '正文已复制；请粘贴、保存并重新打开检查。'
 
     // 主路径：Clipboard API 直接写入（localhost / https 下可用）
     // 注意：调用前不能再 await 其它东西，否则会丢失用户手势。
@@ -335,7 +319,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   return {
-    renderError, annotations, canCopy, copyMessage, coverName, coverData, importCover, removeCover,
+    renderError, annotations, canCopy, copyMessage,
     markdown,
     selectedThemeId,
     currentTheme,

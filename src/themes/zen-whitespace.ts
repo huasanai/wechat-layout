@@ -24,7 +24,7 @@ const designVars: DesignVars = {
   mutedText: '#A8A29E',
   borderColor: '#E7E5E4',
   lightGrayBg: '#F5F5F4',
-  bodyFontSize: '14px',
+  bodyFontSize: '15px',
   bodyLineHeight: '2.1',
   fontFamily: `'PingFang SC','Hiragino Sans GB','Microsoft YaHei',-apple-system,sans-serif`,
 }

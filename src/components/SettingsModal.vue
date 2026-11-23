@@ -93,11 +93,11 @@ function close() {
         <section class="mb-6">
           <h3 class="mb-3 text-sm font-bold text-gray-700">显示设置</h3>
           <div class="space-y-3">
-            <!-- 封面 -->
-            <div class="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
+            <!-- 增强模式文字封面 -->
+            <div v-if="!settings.faithfulMode" class="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
               <div>
-                <div class="text-sm font-medium text-gray-700">显示封面</div>
-                <div class="text-xs text-gray-400">文章顶部的封面卡片</div>
+                <div class="text-sm font-medium text-gray-700">显示文字封面</div>
+                <div class="text-xs text-gray-400">增强模式生成的文字卡片</div>
               </div>
               <button
                 @click="settings.toggleCover()"

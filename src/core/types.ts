@@ -65,7 +65,7 @@ export interface ThemeComponents {
   introCard: (data: IntroData) => string
   toc: (items: TocItem[], conclusionMarker: string) => string
   chapterTitle: (data: ChapterTitleData) => string
-  bodyParagraph: (html: string) => string
+  bodyParagraph: (html: string, inList?: boolean) => string
   boldPrimary: (html: string) => string
   highlightMark: (html: string) => string
   underlineMark: (html: string) => string

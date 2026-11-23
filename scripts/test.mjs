@@ -21,6 +21,17 @@ try {
  }
  assert(renderFaithful('first\nsecond  \nthird',huasanClaude).html.includes('first</span>\n<span leaf="">second</span><br>'))
  assert(renderFaithful('5. five\n6. six',huasanClaude).html.includes('start="5"'))
+ // Regression: list markers share the body inset, item paragraphs do not double it,
+ // and arbitrary ordered starts / nested blocks remain intact.
+ const {themes}=await server.ssrLoadModule('/src/themes/index.ts')
+ for(const theme of themes){
+  assert.equal(theme.designVars.bodyFontSize,'15px')
+  const list=renderFaithful('正文基线。\n\n99. **长项目** [来源](https://example.com)\n\n    续段。\n\n    - 内层条目\n      - 更深一层\n\n100. 第二项\n\n- 无序条目',theme).html
+  assert.match(list,/<ol start="99" style="margin:0 20px 22px;padding:0 0 0 [\d.]+em;list-style-position:outside;font-size:15px;/)
+  assert.match(list,/<ul style="margin:0 0 22px;/)
+  assert.match(list,/<li[^>]*><p style="margin:0 0 8px;font-size:15px;/)
+  assert(list.includes('续段。')&&list.includes('更深一层')&&list.includes('<strong')&&list.includes('href="https://example.com"'))
+ }
  const comments=prepareSource('正文 %%未决\n备注%% 结尾。\n\n`%%字面%%`\n\n```txt\n%%代码%%\n```')
  assert.equal(comments.annotations.length,1);assert(!comments.markdown.includes('未决'));assert(comments.markdown.includes('%%字面%%')&&comments.markdown.includes('%%代码%%'))
  assert.throws(()=>prepareSource('正文 %% 未配对'))
@@ -28,5 +39,12 @@ try {
  assert.throws(()=>renderFaithful('## 本期看点\n\n- 一\n- 二',huasanClaude))
  assert.throws(()=>renderFaithful('![图片](file:///private/image.png)',huasanClaude))
  assert(renderFaithful('正文',huasanClaude,true,'作者提供的说明').html.includes('作者提供的说明'))
+ // Regression: article card has subtle light gray background & rounded corners, and images have no white card frame.
+ const imgDoc=renderFaithful('前文。\n\n![](https://example.com/a.png)\n\n![说明](https://example.com/b.png)\n\n后文。',huasanClaude).html
+ assert(imgDoc.startsWith('<section style="max-width:677px;margin:0 auto;padding:24px 0;background:#FBFBFB;border-radius:16px;'))
+ assert(!imgDoc.includes('background:#FFF;border-radius:12px;padding:6px;'))
+ assert(imgDoc.includes('<section style="margin:0 20px 20px;"><span leaf=""><img src="https://example.com/a.png"'))
+ assert(imgDoc.includes('<section style="margin:0 20px 8px;"><span leaf=""><img src="https://example.com/b.png"'))
+ assert(imgDoc.includes('>说明</span></p>'))
  console.log('PASS: palette-only parity with original moyuGreen;  two themes, punctuation, metadata, nested lists, rich table/link, explicit highlights, conclusion, annotation/code boundaries, malformed source and local image rejection.')
 }finally{await server.close()}

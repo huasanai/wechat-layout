@@ -35,7 +35,7 @@ export function prepareSource(raw: string): { markdown: string; annotations: str
 }
 
 function publicImage(src: string): string {
-  if(!/^https:\/\//i.test(src)) throw new Error('正文图片请使用 HTTPS 地址；本地封面请用「导入封面」。')
+  if(!/^https:\/\//i.test(src)) throw new Error('正文图片请使用 HTTPS 地址；本地图片请在公众号编辑器中手动插入。')
   return escapeHtml(src)
 }
 export function renderFaithful(raw: string, theme: ThemeConfig, showToc=true, footerNote=''): { html:string; annotations:string[] } {
@@ -45,7 +45,7 @@ export function renderFaithful(raw: string, theme: ThemeConfig, showToc=true, fo
       if(n.type==='break') return n.hard ? '<br>' : '\n'
       if(n.type==='text') return wrapLeaf(escapeHtml(n.content))
       if(n.type==='code') return c.inlineCode(escapeHtml(n.content))
-      if(n.type==='image') return c.image(publicImage(n.src),escapeHtml(n.alt))
+      if(n.type==='image') return c.image(publicImage(n.src),n.alt)
       const content=inline(n.children)
       if(n.type==='strong') return c.boldPrimary(content)
       if(n.type==='em') return `<em>${content}</em>`
@@ -61,27 +61,33 @@ export function renderFaithful(raw: string, theme: ThemeConfig, showToc=true, fo
     }).join('')
   }
   let chapter=0
-  function block(b:BlockNode):string {
+  function block(b:BlockNode, inList=false):string {
     switch(b.type) {
-      case 'paragraph': return c.bodyParagraph(inline(b.children))
+      case 'paragraph': return c.bodyParagraph(inline(b.children), inList)
       case 'heading': {
         const text=inlineToPlainText(b.children)
-        if(b.level===1) return `<h2 style="font-size:25px;line-height:1.5;margin:0 0 28px;color:${v.titleColor};">${inline(b.children)}</h2>`
-        if(b.level>=3) return `<h3 style="font-size:17px;line-height:1.6;margin:26px 0 14px;">${inline(b.children)}</h3>`
+        if(b.level===1) return `<h2 style="font-size:25px;line-height:1.5;margin:0 20px 28px;color:${v.titleColor};">${inline(b.children)}</h2>`
+        if(b.level>=3) return `<h3 style="font-size:17px;line-height:1.6;margin:26px 20px 14px;">${inline(b.children)}</h3>`
         chapter++
         const last=isConclusionChapter(text)
         // Replace only our opaque slot after theme formatting, preserving punctuation and inline emphasis.
         return c.chapterTitle({num:last?'∞':String(chapter).padStart(2,'0'),enLabel:last?'THE END':'',title:'HUASAN_TITLE_SLOT'}).replace('HUASAN_TITLE_SLOT',inline(b.children))
       }
-      case 'blockquote': return c.quoteBlock(b.children.map(block).join(''))
+      case 'blockquote': return c.quoteBlock(b.children.map(child=>block(child)).join(''))
       case 'code_block': return (theme.codeStyle==='light'?c.codeBlockLight:c.codeBlockDark)(b.lang,b.content.replace(/\n$/,'').split('\n'))
-      case 'image': return c.image(publicImage(b.src),escapeHtml(b.alt))
+      case 'image': return c.image(publicImage(b.src),b.alt)
       case 'hr': return c.hr()
-      case 'list': return `<${b.ordered?'ol':'ul'}${b.ordered?` start="${b.start ?? 1}"`:''} style="padding-left:24px;margin:0 0 22px;line-height:1.9;">${b.items.map(items=>`<li style="margin-bottom:8px;">${items.map(block).join('')}</li>`).join('')}</${b.ordered?'ol':'ul'}>`
-      case 'list_item': return b.children.map(block).join('')
+      case 'list': {
+        const tag=b.ordered?'ol':'ul'
+        // Reserve marker space inside the same side margins as body paragraphs.
+        // Item paragraphs must not add the article's side margins a second time.
+        const markerWidth=b.ordered?Math.max(2, String((b.start ?? 1)+b.items.length-1).length*0.65+0.8):2
+        return `<${tag}${b.ordered?` start="${b.start ?? 1}"`:''} style="margin:0 ${inList?'0':'20px'} 22px;padding:0 0 0 ${markerWidth}em;list-style-position:outside;font-size:${v.bodyFontSize};line-height:${v.bodyLineHeight};color:${v.bodyColor};">${b.items.map(items=>`<li style="margin:0 0 8px;padding:0;">${items.map(child=>block(child,true)).join('')}</li>`).join('')}</${tag}>`
+      }
+      case 'list_item': return b.children.map(child=>block(child,inList)).join('')
       case 'table': {
         const cell=(nodes:InlineNode[],head=false)=>`<td style="padding:8px;border:1px solid ${v.borderColor};overflow-wrap:anywhere;${head?'font-weight:700;':''}">${inline(nodes)}</td>`
-        return `<table style="width:100%;table-layout:fixed;border-collapse:collapse;margin:20px 0;font-size:13px;"><thead><tr>${b.headers.map(x=>cell(x,true)).join('')}</tr></thead><tbody>${b.rows.map(row=>`<tr>${row.map(x=>cell(x)).join('')}</tr>`).join('')}</tbody></table>`
+        return `<section style="margin:20px 20px;"><table style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:13px;"><thead><tr>${b.headers.map(x=>cell(x,true)).join('')}</tr></thead><tbody>${b.rows.map(row=>`<tr>${row.map(x=>cell(x)).join('')}</tr>`).join('')}</tbody></table></section>`
       }
     }
   }
@@ -96,6 +102,6 @@ export function renderFaithful(raw: string, theme: ThemeConfig, showToc=true, fo
     } else parts.push(block(b))
   }
   if(doc.blocks.length) parts.push(`<section style="text-align:center;margin:38px 0 28px;font-size:10px;letter-spacing:3px;color:${v.primary};">${wrapLeaf('—— END ——')}</section>`)
-  if(footerNote.trim()) parts.push(`<section style="border-top:1px solid ${v.borderColor};padding-top:22px;font-size:13px;line-height:1.9;color:${v.mutedText};">${footerNote.split('\n').filter(x=>x.trim()).map(x=>`<p>${wrapLeaf(escapeHtml(x))}</p>`).join('')}</section>`)
+  if(footerNote.trim()) parts.push(`<section style="margin:0 20px;border-top:1px solid ${v.borderColor};padding-top:22px;font-size:13px;line-height:1.9;color:${v.mutedText};">${footerNote.split('\n').filter(x=>x.trim()).map(x=>`<p>${wrapLeaf(escapeHtml(x))}</p>`).join('')}</section>`)
   return {html:c.globalContainer(parts.join('\n')),annotations:prepared.annotations}
 }

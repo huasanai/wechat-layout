@@ -4,14 +4,6 @@ import { useEditorStore } from '../stores/editor'
 
 const editor = useEditorStore()
 const copied = ref(false)
-const coverError = ref('')
-async function onCoverInput(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  coverError.value=''
-  if(file) { try { await editor.importCover(file) } catch(error) { coverError.value=error instanceof Error?error.message:String(error) } }
-  input.value=''
-}
 const iframeRef = ref<HTMLIFrameElement | null>(null)
 const previewContainerRef = ref<HTMLDivElement | null>(null)
 
@@ -162,12 +154,6 @@ function exportHtml() {
       </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2 border-b px-4 py-2 text-xs text-gray-600">
-      <label class="cursor-pointer rounded border px-2 py-1">导入封面<input class="sr-only" aria-label="导入封面" type="file" accept="image/png,image/jpeg" @change="onCoverInput"></label>
-      <span v-if="editor.coverName">{{ editor.coverName }}</span><button v-if="editor.coverName" @click="editor.removeCover()" class="underline">移除封面</button>
-      <span>封面仅本次预览使用；复制后手动插图。</span>
-      <p v-if="coverError" role="alert" class="w-full text-red-600">{{ coverError }}</p>
-    </div>
     <div v-if="editor.renderError || editor.annotations.length" role="alert" class="bg-red-50 px-4 py-2 text-sm text-red-700">
       {{ editor.renderError || `发现 ${editor.annotations.length} 条未决批注；预览已隐藏批注，处理后从工作稿移除再复制。` }}
     </div>

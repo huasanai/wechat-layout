@@ -24,7 +24,7 @@ const designVars: DesignVars = {
   mutedText: '#A1A1AA',
   borderColor: '#E4E4E7',
   lightGrayBg: '#F4F4F5',
-  bodyFontSize: '14px',
+  bodyFontSize: '15px',
   bodyLineHeight: '2.0',
   fontFamily: `-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif`,
 }
