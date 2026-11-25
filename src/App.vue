@@ -79,9 +79,9 @@ async function handleAIEnhance() {
       <!-- Logo -->
       <div class="flex items-center gap-2">
         <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white">
-          <span class="text-sm font-black">M</span>
+          <span class="text-sm font-black">W</span>
         </div>
-        <span class="text-base font-bold text-gray-800">md2html</span>
+        <span class="text-base font-bold text-gray-800">WeChat layout</span>
         <span class="hidden text-xs text-gray-400 lg:inline">公众号排版工具</span>
       </div>
 

@@ -2,7 +2,7 @@
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 
-const projectGithub = 'https://github.com/demoj/md2html'
+const projectGithub = 'https://github.com/huasanai/wechat-layout'
 const skillGithub = 'https://github.com/isjiamu/gzh-design-skill'
 
 function close() {
@@ -18,7 +18,7 @@ function close() {
   >
     <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
       <div class="mb-4 flex items-center justify-between">
-        <h2 class="text-lg font-bold text-gray-800">关于 md2html</h2>
+        <h2 class="text-lg font-bold text-gray-800">关于 WeChat layout</h2>
         <button
           @click="close"
           class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
@@ -32,7 +32,7 @@ function close() {
       <div class="space-y-4 text-sm text-gray-600">
         <!-- 项目简介 -->
         <p>
-          md2html 是一个纯前端的微信公众号排版工具，将 Markdown 一键转换为可直接粘贴进公众号编辑器的 HTML。
+          WeChat layout 是一个纯前端的微信公众号排版工具，将 Markdown 一键转换为可直接粘贴进公众号编辑器的 HTML。
           所有样式内联、文字用 <code class="rounded bg-gray-100 px-1 text-xs">&lt;span leaf=""&gt;</code> 包裹，粘贴后格式不丢。
         </p>
 
@@ -62,17 +62,11 @@ function close() {
 
         <!-- 关系说明 -->
         <div class="rounded-lg bg-gray-50 p-4">
-          <p class="mb-2 font-medium text-gray-700">与原 Skill 的关系</p>
+          <p class="mb-2 font-medium text-gray-700">开源鸣谢</p>
           <p class="leading-relaxed">
-            本项目参考了
-            <a :href="skillGithub" target="_blank" class="text-emerald-600 hover:underline">gzh-design-skill</a>
-            的设计理念与组件库架构，将其从 AI Agent Skill 转化为纯前端 Web 应用。
-          </p>
-          <p class="mt-2 leading-relaxed">
-            原 Skill 的排版逻辑、6 套主题设计、公众号平台限制兜底方案由
-            <strong>甲木 × 摸鱼小李</strong> 联名共建。本项目在此基础上用 Vue 3 + TypeScript 重新实现，
-            沿用了原 Skill 的全内联样式、<code class="rounded bg-gray-200 px-1 text-xs">span leaf</code> 包裹、
-            双关卡合规校验、AI 增强（关键词下划线 / 封面文案 / 主题推荐）等核心特性，并新增了浏览器端一键复制。
+            感谢 diyun 开源 <a href="https://github.com/DemoJ/md2html" target="_blank" class="text-emerald-600 hover:underline">md2html</a>。
+            WeChat layout 在原项目基础上增加了保真排版和文件渲染，优化了手机微信中的列表字距与代码块横滑。
+            排版组件设计源于甲木 × 摸鱼小李的 gzh-design-skill。本项目沿用 AGPL-3.0-or-later 许可证。
           </p>
         </div>
 

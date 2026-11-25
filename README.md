@@ -1,16 +1,16 @@
-# 画伞的公众号排版 · md2html
+# WeChat layout
 
 把 Markdown 排成公众号文章，在浏览器预览、复制富文本或导出 HTML。默认使用**保真排版**，无需配置 LLM；接入 LLM 后，可选择使用上游的 AI 增强功能。
 
-本项目是 [DemoJ/md2html](https://github.com/DemoJ/md2html) 的个人 fork，组件设计源于甲木 × 摸鱼小李的 [gzh-design-skill](https://github.com/isjiamu/gzh-design-skill)。新增橙色／墨绿配色、保真模式、文件渲染入口，并修正目录卡片为同排等宽等高。只交付预览、复制和导出，不自动推送公众号草稿箱。
+本项目是 [DemoJ/md2html](https://github.com/DemoJ/md2html) 的个人 fork，组件设计源于甲木 × 摸鱼小李的 [gzh-design-skill](https://github.com/isjiamu/gzh-design-skill)。新增橙色／墨绿配色、保真模式、文件渲染入口，并修正目录卡片为同排等宽等高。针对手机微信优化了中英文混排列表的字距，代码块保留原始分行、空行和缩进，长行支持左右滑动。
 
 ## 先跑起来
 
 建议使用 Node.js 20.19+ 或 22.12+ 的受支持版本。
 
 ```sh
-git clone https://github.com/huasanai/md2html.git
-cd md2html
+git clone https://github.com/huasanai/wechat-layout.git
+cd wechat-layout
 npm ci
 npm run dev -- --host 127.0.0.1
 ```
