@@ -30,7 +30,14 @@ try {
   assert.match(list,/<ol start="99" style="margin:0 20px 22px;padding:0 0 0 [\d.]+em;list-style-position:outside;font-size:15px;/)
   assert.match(list,/<ul style="margin:0 0 22px;/)
   assert.match(list,/<li[^>]*><p style="margin:0 0 8px;font-size:15px;/)
+  assert.match(list,/<li[^>]*><p style="[^"]*text-align:left;[^"]*overflow-wrap:anywhere;/)
   assert(list.includes('续段。')&&list.includes('更深一层')&&list.includes('<strong')&&list.includes('href="https://example.com"'))
+ }
+ // Both code palettes must preserve literal tabs, blank lines and escaped markup.
+ for (const render of [moyuGreen.components.codeBlockDark, moyuGreen.components.codeBlockLight]) {
+  const html = render('txt', ['\t  <tag> & data', '', '  final  ', ''])
+  assert.match(html, /<pre\b[^>]*overflow-x:auto;[^>]*white-space:pre;/)
+  assert(html.includes('<span leaf="">\t  &lt;tag&gt; &amp; data\n\n  final  \n\n</span>'))
  }
  const comments=prepareSource('正文 %%未决\n备注%% 结尾。\n\n`%%字面%%`\n\n```txt\n%%代码%%\n```')
  assert.equal(comments.annotations.length,1);assert(!comments.markdown.includes('未决'));assert(comments.markdown.includes('%%字面%%')&&comments.markdown.includes('%%代码%%'))

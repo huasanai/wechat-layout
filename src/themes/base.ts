@@ -7,7 +7,7 @@
  */
 
 import type { DesignVars, ThemeComponents, ThemeConfig, TocItem } from '../core/types'
-import { toFullWidthPunctuation, wrapLeaf, escapeHtml, escapeCodeLine } from '../core/transform'
+import { toFullWidthPunctuation, wrapLeaf, escapeHtml } from '../core/transform'
 
 /**
  * 内容区左右留白。
@@ -15,6 +15,12 @@ import { toFullWidthPunctuation, wrapLeaf, escapeHtml, escapeCodeLine } from '..
  * 每个内容模块自带左右 20px 边距，封面/横幅这类全宽元素则铺满。
  */
 const SIDE = '20px'
+
+// Keep literal source whitespace inside the scrolling area, with the header outside.
+function codeBody(lines: string[], color: string): string {
+  const source = escapeHtml(lines.join('\n') + '\n')
+  return `<pre data-ignore-width style="margin:0;padding:11px 14px;box-sizing:border-box;max-width:100%;overflow-x:auto;white-space:pre;text-align:left;letter-spacing:normal;tab-size:2;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:${color};"><code style="font:inherit;white-space:pre;">${wrapLeaf(source)}</code></pre>`
+}
 
 /**
  * 主题基类工厂
@@ -27,9 +33,9 @@ export function createBaseComponents(v: DesignVars): Partial<ThemeComponents> {
     globalContainer: (children: string) =>
       `<section style="max-width:677px;margin:0 auto;padding:24px 0;background:#FBFBFB;border-radius:16px;font-family:${v.fontFamily};color:${v.bodyColor};line-height:1.75;letter-spacing:0.5px;overflow-x:hidden;box-sizing:border-box;">${children}</section>`,
 
-    // 正文段落（两端对齐，参考上游 text-align:justify）
+    // 正文和列表自然换行，避免窄屏两端对齐拉大中英文间距。
     bodyParagraph: (html: string, inList = false) =>
-      `<p style="margin:${inList ? '0 0 8px' : `0 ${SIDE} 18px`};font-size:${v.bodyFontSize};line-height:${v.bodyLineHeight};color:${v.bodyColor};letter-spacing:0.5px;text-align:justify;">${html}</p>`,
+      `<p style="margin:${inList ? '0 0 8px' : `0 ${SIDE} 18px`};font-size:${v.bodyFontSize};line-height:${v.bodyLineHeight};color:${v.bodyColor};letter-spacing:0.5px;text-align:left;overflow-wrap:anywhere;">${html}</p>`,
 
     // 主色加粗
     boldPrimary: (html: string) =>
@@ -56,13 +62,7 @@ export function createBaseComponents(v: DesignVars): Partial<ThemeComponents> {
       const langLabel = lang
         ? `<span style="margin-left:12px;font-size:12px;color:#64748B;font-family:Consolas,Monaco,monospace;letter-spacing:1px;">${wrapLeaf(escapeHtml(lang))}</span>`
         : ''
-      const codeLines = lines
-        .map(
-          (line) =>
-            `<p style="margin:0;word-wrap:break-word;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#E2E8F0;">${wrapLeaf(escapeCodeLine(line))}</p>`
-        )
-        .join('')
-      return `<section style="margin:0 ${SIDE} 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);"><section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;">.</span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;">.</span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;">.</span>${langLabel}</section><section style="padding:11px 14px;">${codeLines}</section></section>`
+      return `<section style="margin:0 ${SIDE} 20px;border-radius:8px;overflow:hidden;background:#1E293B;box-shadow:0 4px 16px -8px rgba(15,23,42,0.4);"><section style="display:flex;align-items:center;padding:9px 14px;background:#0F172A;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FF5F56;margin-right:7px;font-size:0;line-height:0;overflow:hidden;">.</span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#FFBD2E;margin-right:7px;font-size:0;line-height:0;overflow:hidden;">.</span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#27C93F;font-size:0;line-height:0;overflow:hidden;">.</span>${langLabel}</section>${codeBody(lines, '#E2E8F0')}</section>`
     },
 
     // 浅色代码块
@@ -70,13 +70,7 @@ export function createBaseComponents(v: DesignVars): Partial<ThemeComponents> {
       const langLabel = lang
         ? `<span style="font-size:12px;color:${v.mutedText};font-family:Consolas,Monaco,monospace;letter-spacing:1px;">${wrapLeaf(escapeHtml(lang))}</span>`
         : ''
-      const codeLines = lines
-        .map(
-          (line) =>
-            `<p style="margin:0;word-wrap:break-word;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:#24292F;">${wrapLeaf(escapeCodeLine(line))}</p>`
-        )
-        .join('')
-      return `<section style="margin:0 ${SIDE} 20px;border-radius:8px;overflow:hidden;background:#F6F8FA;border:1px solid ${v.borderColor};border-left:3px solid ${v.primary};"><section style="padding:7px 14px;border-bottom:1px solid ${v.borderColor};">${langLabel}</section><section style="padding:11px 14px;">${codeLines}</section></section>`
+      return `<section style="margin:0 ${SIDE} 20px;border-radius:8px;overflow:hidden;background:#F6F8FA;border:1px solid ${v.borderColor};border-left:3px solid ${v.primary};"><section style="padding:7px 14px;border-bottom:1px solid ${v.borderColor};">${langLabel}</section>${codeBody(lines, '#24292F')}</section>`
     },
 
     // 行内代码（等宽字体属于代码可读性必需，与上游一致保留）
@@ -135,7 +129,7 @@ export function createBaseComponents(v: DesignVars): Partial<ThemeComponents> {
       const marker = ordered
         ? `<span style="color:${v.primary};font-weight:700;margin-right:6px;flex-shrink:0;">${wrapLeaf(`${index + 1}.`)}</span>`
         : `<span style="color:${v.primary};margin-right:8px;flex-shrink:0;">${wrapLeaf('•')}</span>`
-      return `<p style="margin:0 ${SIDE} ${isLast ? 18 : 8}px;font-size:${v.bodyFontSize};line-height:${v.bodyLineHeight};color:${v.bodyColor};display:flex;align-items:flex-start;text-align:justify;">${marker}<span style="flex:1;">${html}</span></p>`
+      return `<p style="margin:0 ${SIDE} ${isLast ? 18 : 8}px;font-size:${v.bodyFontSize};line-height:${v.bodyLineHeight};color:${v.bodyColor};display:flex;align-items:flex-start;text-align:left;overflow-wrap:anywhere;">${marker}<span style="flex:1;min-width:0;">${html}</span></p>`
     },
 
     // 目录（skill toc-scroll：横向滚动，列出所有章节，最后固定「写在最后」卡）

@@ -101,27 +101,6 @@ export function wrapLeaf(text: string): string {
 }
 
 /**
- * 代码行渲染：转义 HTML 并保住空白，且**不依赖 `white-space:pre`**。
- *
- * 上游 skill 明令禁用 `white-space:pre`：它会把 HTML 源码里 span 前的缩进和行间换行
- * 原样渲染成大左缩进 + 空行；官方规范 1.8 也点名 `<pre>` 在移动端会溢出截断。
- * 这里改用「不可折叠空白」方案，在 `white-space:normal` 下也能保住代码格式：
- *   - 行首缩进空格 → 全部 `&nbsp;`（HTML 默认会折叠并删除行首空白）
- *   - 行内连续空格 → 保留第一个为普通空格（留出折行点），其余转 `&nbsp;` 防止被折叠
- * 行内单个空格保持原样，长行仍能正常换行；制表符按编辑器一致的口径展开为 2 个空格。
- */
-export function escapeCodeLine(line: string): string {
-  const expanded = line.replace(/\t/g, '  ')
-  const indent = expanded.match(/^ +/)?.[0] ?? ''
-  const body = expanded.slice(indent.length)
-  const bodyHtml = escapeHtml(body).replace(
-    / {2,}/g,
-    (spaces) => ' ' + '&nbsp;'.repeat(spaces.length - 1)
-  )
-  return '&nbsp;'.repeat(indent.length) + bodyHtml
-}
-
-/**
  * 章节编号格式化
  * 01, 02, 03... 末章用 ∞
  */
