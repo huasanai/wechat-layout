@@ -16,10 +16,14 @@ import { toFullWidthPunctuation, wrapLeaf, escapeHtml } from '../core/transform'
  */
 const SIDE = '20px'
 
-// Keep literal source whitespace inside the scrolling area, with the header outside.
+// WeChat can collapse newlines inside a single pasted text node. Give each source
+// line its own paragraph, including a real line break for empty paragraphs.
 function codeBody(lines: string[], color: string): string {
-  const source = escapeHtml(lines.join('\n') + '\n')
-  return `<pre data-ignore-width style="margin:0;padding:11px 14px;box-sizing:border-box;max-width:100%;overflow-x:auto;white-space:pre;text-align:left;letter-spacing:normal;tab-size:2;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:${color};"><code style="font:inherit;white-space:pre;">${wrapLeaf(source)}</code></pre>`
+  const rows = lines.map(line => {
+    const text = escapeHtml(line).replace(/\t/g, '  ').replace(/ /g, '&nbsp;')
+    return `<p style="margin:0;white-space:nowrap;text-align:left;">${wrapLeaf(text || '<br>')}</p>`
+  }).join('')
+  return `<section data-ignore-width style="display:block;max-width:100%;overflow-x:scroll;-webkit-overflow-scrolling:touch;"><section style="display:inline-block;width:max-content;min-width:100%;box-sizing:border-box;padding:11px 14px;vertical-align:top;text-align:left;letter-spacing:normal;font-family:'SF Mono',Consolas,Monaco,monospace;font-size:13px;line-height:1.6;color:${color};">${rows}</section></section>`
 }
 
 /**

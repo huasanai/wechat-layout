@@ -33,11 +33,14 @@ try {
   assert.match(list,/<li[^>]*><p style="[^"]*text-align:left;[^"]*overflow-wrap:anywhere;/)
   assert(list.includes('续段。')&&list.includes('更深一层')&&list.includes('<strong')&&list.includes('href="https://example.com"'))
  }
- // Both code palettes must preserve literal tabs, blank lines and escaped markup.
+ // Each source line survives HTML whitespace collapsing, including empty rows.
  for (const render of [moyuGreen.components.codeBlockDark, moyuGreen.components.codeBlockLight]) {
   const html = render('txt', ['\t  <tag> & data', '', '  final  ', ''])
-  assert.match(html, /<pre\b[^>]*overflow-x:auto;[^>]*white-space:pre;/)
-  assert(html.includes('<span leaf="">\t  &lt;tag&gt; &amp; data\n\n  final  \n\n</span>'))
+  assert.match(html, /<section data-ignore-width[^>]*overflow-x:scroll;/)
+  const rows = [...html.matchAll(/<p style="[^"]*white-space:nowrap;[^"]*"><span leaf="">(.*?)<\/span><\/p>/g)]
+  assert.deepEqual(rows.map(row => row[1]), [
+   '&nbsp;&nbsp;&nbsp;&nbsp;&lt;tag&gt;&nbsp;&amp;&nbsp;data', '<br>', '&nbsp;&nbsp;final&nbsp;&nbsp;', '<br>',
+  ])
  }
  const comments=prepareSource('正文 %%未决\n备注%% 结尾。\n\n`%%字面%%`\n\n```txt\n%%代码%%\n```')
  assert.equal(comments.annotations.length,1);assert(!comments.markdown.includes('未决'));assert(comments.markdown.includes('%%字面%%')&&comments.markdown.includes('%%代码%%'))
